@@ -1,4 +1,4 @@
-// app/(tabs)/index.tsx - CORREGIR conflicto de nombres
+// app/index.tsx - NUEVA pantalla principal (sin tabs)
 import { AuthModal } from '@/components/AuthModal';
 import { HomeScreen } from '@/components/HomeScreen';
 import { ProjectConfigModal } from '@/components/ProjectConfigModal';
@@ -7,8 +7,7 @@ import { usePortfolioApp } from '@/hooks/userPortfolioApp';
 import { router } from 'expo-router';
 import React from 'react';
 
-// Cambio el nombre del componente para evitar conflicto
-export default function PortfolioHomePage() {
+export default function PortfolioApp() {
   const {
     // Estados
     showAuthModal,
@@ -40,10 +39,9 @@ export default function PortfolioHomePage() {
     closeProjectConfigModal,
   } = usePortfolioApp();
 
-  // Función para abrir proyecto (navegará a otra ruta)
+  // Función para abrir proyecto individual
   const handleOpenProject = (project: any) => {
     openProject(project);
-    // Navegar a la pantalla del proyecto
     router.push({
       pathname: '/project/[id]',
       params: { id: project.id.toString() }
@@ -52,7 +50,7 @@ export default function PortfolioHomePage() {
 
   return (
     <>
-      {/* Pantalla principal */}
+      {/* Pantalla principal - StartScreen o HomeScreen */}
       {!user ? (
         <StartScreen onAuth={openAuthModal} />
       ) : (
@@ -64,7 +62,7 @@ export default function PortfolioHomePage() {
         />
       )}
 
-      {/* Modales */}
+      {/* Modal de autenticación mejorado */}
       <AuthModal
         visible={showAuthModal}
         authMode={authMode}
@@ -76,6 +74,7 @@ export default function PortfolioHomePage() {
         onFormChange={updateAuthForm}
       />
 
+      {/* Modal de configuración mejorado */}
       <ProjectConfigModal
         visible={showProjectConfigModal}
         projectConfig={projectConfig}
