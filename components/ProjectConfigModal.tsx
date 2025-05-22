@@ -1,11 +1,12 @@
-// components/ProjectConfigModal.tsx - MEJORADO con Drag & Drop
+// components/ProjectConfigModal.tsx - IMPORTS CORREGIDOS
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { portfolioStyles } from '@/styles/styles';
 import { ProjectConfig, ProjectSection } from '@/types';
 import { BlurView } from 'expo-blur';
 import React, { useEffect, useState } from 'react';
-import { Dimensions, Modal, PanGestureHandler, ScrollView, Switch, TouchableOpacity } from 'react-native';
+import { Dimensions, Modal, ScrollView, Switch, TouchableOpacity } from 'react-native';
+import { PanGestureHandler } from 'react-native-gesture-handler';
 import Animated, {
     runOnJS,
     useAnimatedGestureHandler,
@@ -24,49 +25,31 @@ interface ProjectConfigModalProps {
   onUpdateConfig: (field: keyof ProjectConfig, value: any) => void;
 }
 
-const { height: screenHeight, width: screenWidth } = Dimensions.get('window');
+const { height: screenHeight } = Dimensions.get('window');
 
-// Componente para una sección draggable
+// Componente para una sección draggable - SIMPLIFICADO
 const DraggableSection = ({ 
   section, 
   index, 
-  onToggle, 
-  onMove,
-  isDragging,
-  setIsDragging 
+  onToggle
 }: {
   section: ProjectSection;
   index: number;
   onToggle: () => void;
-  onMove: (fromIndex: number, toIndex: number) => void;
-  isDragging: boolean;
-  setIsDragging: (dragging: boolean) => void;
 }) => {
-  const translateY = useSharedValue(0);
   const scale = useSharedValue(1);
 
   const gestureHandler = useAnimatedGestureHandler({
     onStart: () => {
-      scale.value = withSpring(1.05);
-      runOnJS(setIsDragging)(true);
-    },
-    onActive: (event) => {
-      translateY.value = event.translationY;
+      scale.value = withSpring(1.02);
     },
     onEnd: () => {
-      translateY.value = withSpring(0);
       scale.value = withSpring(1);
-      runOnJS(setIsDragging)(false);
     },
   });
 
   const animatedStyle = useAnimatedStyle(() => ({
-    transform: [
-      { translateY: translateY.value },
-      { scale: scale.value }
-    ],
-    zIndex: isDragging ? 1000 : 1,
-    elevation: isDragging ? 10 : 1,
+    transform: [{ scale: scale.value }],
   }));
 
   return (
@@ -75,7 +58,6 @@ const DraggableSection = ({
         <ThemedView style={[
           portfolioStyles.sectionRow,
           { 
-            backgroundColor: isDragging ? '#f0f9ff' : 'transparent',
             marginVertical: 2,
             paddingHorizontal: 12,
             borderRadius: 8,
@@ -112,9 +94,8 @@ export const ProjectConfigModal: React.FC<ProjectConfigModalProps> = ({
   onToggleSection,
   onUpdateConfig,
 }) => {
-  // Estados locales para drag & drop
+  // Estados locales
   const [sections, setSections] = useState(projectConfig.sections);
-  const [isDragging, setIsDragging] = useState(false);
 
   // Sincronizar con props cuando cambie
   useEffect(() => {
@@ -153,22 +134,6 @@ export const ProjectConfigModal: React.FC<ProjectConfigModalProps> = ({
     });
   };
 
-  // Función para mover secciones
-  const moveSection = (fromIndex: number, toIndex: number) => {
-    const newSections = [...sections];
-    const [movedSection] = newSections.splice(fromIndex, 1);
-    newSections.splice(toIndex, 0, movedSection);
-    
-    // Actualizar orden
-    const updatedSections = newSections.map((section, index) => ({
-      ...section,
-      order: index
-    }));
-    
-    setSections(updatedSections);
-    onUpdateConfig('sections', updatedSections);
-  };
-
   const handleToggleSection = (index: number) => {
     const newSections = [...sections];
     newSections[index].enabled = !newSections[index].enabled;
@@ -187,13 +152,13 @@ export const ProjectConfigModal: React.FC<ProjectConfigModalProps> = ({
             activeOpacity={1}
           />
 
-          {/* Modal container - MÁS PEQUEÑO */}
+          {/* Modal container - 85% de la pantalla */}
           <Animated.View style={[modalStyle, { 
             position: 'absolute',
             bottom: 0,
             left: 0,
             right: 0,
-            height: screenHeight * 0.85, // 85% de la pantalla
+            height: screenHeight * 0.85,
             backgroundColor: 'transparent'
           }]}>
             <ThemedView style={[{
@@ -210,7 +175,7 @@ export const ProjectConfigModal: React.FC<ProjectConfigModalProps> = ({
               </ThemedView>
               
               <ScrollView style={portfolioStyles.configScrollView}>
-                {/* Secciones con Drag & Drop */}
+                {/* Secciones con Drag & Drop SIMPLIFICADO */}
                 <ThemedView style={portfolioStyles.configSection}>
                   <ThemedText style={portfolioStyles.configSectionTitle}>
                     ¿Qué secciones quieres? (arrastra para reordenar)
@@ -222,9 +187,6 @@ export const ProjectConfigModal: React.FC<ProjectConfigModalProps> = ({
                       section={section}
                       index={index}
                       onToggle={() => handleToggleSection(index)}
-                      onMove={moveSection}
-                      isDragging={isDragging}
-                      setIsDragging={setIsDragging}
                     />
                   ))}
                 </ThemedView>
