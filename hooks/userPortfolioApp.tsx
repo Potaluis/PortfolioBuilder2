@@ -150,24 +150,30 @@ export const usePortfolioApp = () => {
 
     setLoading(true);
     try {
-      const newProjectData = {
-        name: `Portfolio ${projects.length + 1}`,
-        config: { ...projectConfig },
-        content: {
-          aboutMe: '',
-          projects: [],
-          services: [],
-          blog: [],
-          testimonials: [],
-          contact: {}
+    const newProjectData = {
+    userId: firebaseUser.uid,
+    name: `Portfolio ${projects.length + 1}`,
+    config: { ...projectConfig },
+    content: {
+        aboutMe: {
+        title: '',
+        description: '',
+        image: '',
+        skills: []
         },
-        settings: {
-          published: false,
-          domain: null,
-          seoTitle: '',
-          seoDescription: ''
-        }
-      };
+        projects: [],
+        services: [],
+        blog: [],
+        testimonials: [],
+        contact: {}
+    },
+    settings: {
+        published: false,
+        domain: undefined,  // ✅ Cambiar de null a undefined
+        seoTitle: '',
+        seoDescription: ''
+    }
+    };
 
       const savedProject = await saveProject(newProjectData);
       
