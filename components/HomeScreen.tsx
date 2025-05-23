@@ -11,6 +11,7 @@ interface HomeScreenProps {
   projects: Project[];
   onOpenProject: (project: Project) => void;
   onCreateProject: () => void;
+  onLogout?: () => void; // Añadir prop para logout
 }
 
 export const HomeScreen: React.FC<HomeScreenProps> = ({
@@ -18,6 +19,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
   projects,
   onOpenProject,
   onCreateProject,
+  onLogout,
 }) => {
   return (
     <ThemedView style={{ flex: 1 }}>
@@ -25,8 +27,27 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
       
       {/* Header */}
       <ThemedView style={portfolioStyles.header}>
-        <ThemedText style={portfolioStyles.headerTitle}>Mis Portfolios</ThemedText>
-        <ThemedText style={portfolioStyles.headerSubtitle}>Hola, {user.username}</ThemedText>
+        <ThemedView>
+          <ThemedText style={portfolioStyles.headerTitle}>Mis Portfolios</ThemedText>
+          <ThemedText style={portfolioStyles.headerSubtitle}>Hola, {user.username}</ThemedText>
+        </ThemedView>
+        
+        {/* Botón de logout */}
+        {onLogout && (
+          <TouchableOpacity 
+            onPress={onLogout}
+            style={{
+              backgroundColor: '#ef4444',
+              paddingHorizontal: 16,
+              paddingVertical: 8,
+              borderRadius: 8,
+            }}
+          >
+            <ThemedText style={{ color: 'white', fontWeight: '600' }}>
+              Cerrar sesión
+            </ThemedText>
+          </TouchableOpacity>
+        )}
       </ThemedView>
 
       {/* Grid de proyectos */}

@@ -23,6 +23,7 @@ export default function PortfolioApp() {
     handleGoogleAuth,
     updateAuthForm,
     setAuthMode,
+    logout, // Añadir logout
 
     // Funciones de proyectos
     createNewProject,
@@ -59,6 +60,7 @@ export default function PortfolioApp() {
           projects={projects}
           onOpenProject={handleOpenProject}
           onCreateProject={openProjectConfigModal}
+          onLogout={logout} // Pasar la función logout
         />
       )}
 

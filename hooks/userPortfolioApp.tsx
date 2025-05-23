@@ -1,9 +1,9 @@
-// hooks/userPortfolioApp.tsx - ACTUALIZADO con Firebase
+// hooks/userPortfolioApp.tsx - MEJORADO con flujo de autenticación funcional
 import {
-    AuthForm,
-    AuthMode,
-    Project,
-    ProjectConfig
+  AuthForm,
+  AuthMode,
+  Project,
+  ProjectConfig
 } from '@/types';
 import { useEffect, useState } from 'react';
 import { Alert } from 'react-native';
@@ -77,7 +77,7 @@ export const usePortfolioApp = () => {
     };
 
     loadUserProjects();
-  }, [firebaseUser]);
+  }, [firebaseUser, getUserProjects]);
 
   // Mostrar errores de Firebase
   useEffect(() => {
@@ -86,72 +86,115 @@ export const usePortfolioApp = () => {
         { text: 'OK', onPress: clearError }
       ]);
     }
-  }, [firebaseError]);
+  }, [firebaseError, clearError]);
 
   // Funciones de autenticación
   const handleAuth = async () => {
-    // Validaciones comunes
-    if (!authForm.email.trim()) {
+    console.log('handleAuth called with mode:', authMode);
+    
+    // Validaciones básicas
+    const emailTrim = authForm.email.trim();
+    const passwordTrim = authForm.password.trim();
+    
+    if (!emailTrim) {
       Alert.alert('Error', 'Por favor ingresa tu email');
       return;
     }
-    if (!authForm.password.trim()) {
+    
+    // Validación simple de email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(emailTrim)) {
+      Alert.alert('Error', 'Por favor ingresa un email válido');
+      return;
+    }
+    
+    if (!passwordTrim) {
       Alert.alert('Error', 'Por favor ingresa tu contraseña');
       return;
     }
 
     if (authMode === 'register') {
       // Validaciones adicionales para registro
-      if (!authForm.username.trim()) {
+      const usernameTrim = authForm.username.trim();
+      
+      if (!usernameTrim) {
         Alert.alert('Error', 'Por favor ingresa un nombre de usuario');
         return;
       }
-      if (authForm.password.length < 6) {
+      
+      if (passwordTrim.length < 6) {
         Alert.alert('Error', 'La contraseña debe tener al menos 6 caracteres');
         return;
       }
-      if (authForm.password !== authForm.confirmPassword) {
+      
+      if (passwordTrim !== authForm.confirmPassword) {
         Alert.alert('Error', 'Las contraseñas no coinciden');
         return;
       }
 
       // Registrar con Firebase
-      const result = await firebaseRegister(
-        authForm.email, 
-        authForm.password, 
-        authForm.username
-      );
-
-      if (result.success) {
-        if (result.needsVerification) {
-          Alert.alert(
-            'Verificación requerida',
-            'Te hemos enviado un email de verificación. Por favor verifica tu cuenta.',
-            [{ text: 'OK', onPress: () => setShowAuthModal(false) }]
-          );
-        } else {
+      try {
+        console.log('Calling firebaseRegister...');
+        const result = await firebaseRegister(emailTrim, passwordTrim, usernameTrim);
+        console.log('Register result:', result);
+        
+        if (result.success) {
           setShowAuthModal(false);
           Alert.alert('¡Bienvenido!', 'Tu cuenta ha sido creada exitosamente');
+          // Limpiar formulario
+          setAuthForm({ username: '', email: '', password: '', confirmPassword: '' });
         }
-        // Limpiar formulario después del éxito
-        setAuthForm({ username: '', email: '', password: '', confirmPassword: '' });
+      } catch (error) {
+        console.error('Register error:', error);
+        Alert.alert('Error', 'No se pudo crear la cuenta. Por favor intenta de nuevo.');
       }
     } else {
       // Iniciar sesión con Firebase
-      const result = await firebaseLogin(authForm.email, authForm.password);
-      
-      if (result.success) {
-        setShowAuthModal(false);
-        Alert.alert('¡Bienvenido!', 'Has iniciado sesión correctamente');
-        // Limpiar formulario después del éxito
-        setAuthForm({ username: '', email: '', password: '', confirmPassword: '' });
+      try {
+        console.log('Calling firebaseLogin...');
+        const result = await firebaseLogin(emailTrim, passwordTrim);
+        console.log('Login result:', result);
+        
+        if (result.success) {
+          setShowAuthModal(false);
+          Alert.alert('¡Bienvenido!', 'Has iniciado sesión correctamente');
+          // Limpiar formulario
+          setAuthForm({ username: '', email: '', password: '', confirmPassword: '' });
+        }
+      } catch (error) {
+        console.error('Login error:', error);
+        Alert.alert('Error', 'No se pudo iniciar sesión. Por favor verifica tus credenciales.');
       }
     }
   };
 
   const handleGoogleAuth = async () => {
-    // TODO: Implementar autenticación con Google
-    Alert.alert('Próximamente', 'Autenticación con Google estará disponible pronto');
+    console.log('Google auth pressed - modo demo');
+    
+    // En modo demo, simular login con Google
+    try {
+      setLoading(true);
+      
+      // Simular un delay
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Usar el método de login del hook de Firebase con credenciales de Google simuladas
+      const result = await firebaseLogin('demo.google@gmail.com', 'google123');
+      
+      if (result.success) {
+        setShowAuthModal(false);
+        Alert.alert('¡Bienvenido!', 'Has iniciado sesión con Google (modo demo)');
+        // Limpiar formulario
+        setAuthForm({ username: '', email: '', password: '', confirmPassword: '' });
+      } else {
+        Alert.alert('Error', 'No se pudo iniciar sesión con Google');
+      }
+    } catch (error) {
+      console.error('Google auth error:', error);
+      Alert.alert('Error', 'No se pudo iniciar sesión con Google');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const updateAuthForm = (field: keyof AuthForm, value: string) => {
@@ -167,30 +210,30 @@ export const usePortfolioApp = () => {
 
     setLoading(true);
     try {
-    const newProjectData = {
-    userId: firebaseUser.uid,
-    name: `Portfolio ${projects.length + 1}`,
-    config: { ...projectConfig },
-    content: {
-        aboutMe: {
-        title: '',
-        description: '',
-        image: '',
-        skills: []
+      const newProjectData = {
+        userId: firebaseUser.uid,
+        name: `Portfolio ${projects.length + 1}`,
+        config: { ...projectConfig },
+        content: {
+          aboutMe: {
+            title: '',
+            description: '',
+            image: '',
+            skills: []
+          },
+          projects: [],
+          services: [],
+          blog: [],
+          testimonials: [],
+          contact: {}
         },
-        projects: [],
-        services: [],
-        blog: [],
-        testimonials: [],
-        contact: {}
-    },
-    settings: {
-        published: false,
-        domain: undefined,  // ✅ Cambiar de null a undefined
-        seoTitle: '',
-        seoDescription: ''
-    }
-    };
+        settings: {
+          published: false,
+          domain: undefined,
+          seoTitle: '',
+          seoDescription: ''
+        }
+      };
 
       const savedProject = await saveProject(newProjectData);
       
@@ -285,6 +328,7 @@ export const usePortfolioApp = () => {
       await firebaseLogout();
       setProjects([]);
       setCurrentProject(null);
+      Alert.alert('Sesión cerrada', 'Has cerrado sesión correctamente');
     } catch (error) {
       console.error('Error logging out:', error);
     }

@@ -1,6 +1,7 @@
-// hooks/useFirebase.tsx - SIMPLIFICADO sin errores
+// hooks/useFirebase.tsx - CORREGIDO con flujo de autenticación funcional
 import { isFirebaseConfigured } from '@/services/firebase';
-import { Project, User } from '@/types';
+import { AuthResponse, Project, User } from '@/types';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useEffect, useState } from 'react';
 
 // Mock user para desarrollo
@@ -56,75 +57,107 @@ export const useFirebase = () => {
 
   // Inicializar en modo demo o real
   useEffect(() => {
-    if (isConfigured) {
-      // TODO: Implementar Firebase real cuando esté configurado
-      console.log('🔥 Firebase configurado - implementar lógica real');
+    // Verificar si hay un usuario guardado en el storage (simulado)
+    const checkStoredUser = async () => {
+      try {
+        const storedUser = await AsyncStorage.getItem('demo_user');
+        if (storedUser) {
+          setUser(JSON.parse(storedUser));
+        }
+      } catch (error) {
+        console.error('Error loading stored user:', error);
+      }
       setLoading(false);
-    } else {
-      // Modo demo
-      console.log('🎭 Modo demo activo');
-      setTimeout(() => setLoading(false), 1000);
-    }
-  }, [isConfigured]);
+    };
+
+    // Pequeño delay para simular carga
+    setTimeout(checkStoredUser, 500);
+  }, []);
 
   // Registrar usuario
-  const register = async (email: string, password: string, username: string) => {
+  const register = async (email: string, password: string, username: string): Promise<AuthResponse> => {
     try {
       setLoading(true);
       setError(null);
 
       if (!isConfigured) {
-        // Simulación en modo demo
-        setTimeout(() => {
-          setUser({ ...MOCK_USER, email, username });
-          setLoading(false);
-        }, 1500);
-        return { success: true, needsVerification: true };
+        // Simulación en modo demo con Promise tipada
+        return new Promise<AuthResponse>(async (resolve) => {
+          setTimeout(async () => {
+            const newUser = { 
+              ...MOCK_USER, 
+              uid: `demo-${Date.now()}`,
+              email, 
+              username,
+              createdAt: new Date().toISOString()
+            };
+            
+            // Guardar usuario en AsyncStorage para persistencia
+            try {
+              await AsyncStorage.setItem('demo_user', JSON.stringify(newUser));
+            } catch (error) {
+              console.error('Error saving user to storage:', error);
+            }
+            
+            // Actualizar estado
+            setUser(newUser);
+            setLoading(false);
+            
+            resolve({ success: true, needsVerification: false });
+          }, 1500);
+        });
       }
 
       // TODO: Implementar registro real con Firebase
-      // const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      // await sendEmailVerification(userCredential.user);
-      // const userProfile = await createUserProfile(userCredential.user, username);
-      // setUser(userProfile);
-      
       return { success: true, needsVerification: true };
     } catch (error: any) {
       const errorMessage = 'Error en el registro';
       setError(errorMessage);
-      return { success: false, error: errorMessage };
-    } finally {
       setLoading(false);
+      return { success: false, error: errorMessage };
     }
   };
 
   // Iniciar sesión
-  const login = async (email: string, password: string) => {
+  const login = async (email: string, password: string): Promise<AuthResponse> => {
     try {
       setLoading(true);
       setError(null);
 
       if (!isConfigured) {
-        // Simulación en modo demo
-        setTimeout(() => {
-          setUser({ ...MOCK_USER, email });
-          setLoading(false);
-        }, 1000);
-        return { success: true };
+        // Simulación en modo demo con Promise tipada
+        return new Promise<AuthResponse>(async (resolve) => {
+          setTimeout(async () => {
+            const loggedInUser = { 
+              ...MOCK_USER, 
+              uid: `demo-${Date.now()}`,
+              email,
+              username: email.split('@')[0] // Usar parte del email como username
+            };
+            
+            // Guardar usuario en AsyncStorage para persistencia
+            try {
+              await AsyncStorage.setItem('demo_user', JSON.stringify(loggedInUser));
+            } catch (error) {
+              console.error('Error saving user to storage:', error);
+            }
+            
+            // Actualizar estado
+            setUser(loggedInUser);
+            setLoading(false);
+            
+            resolve({ success: true });
+          }, 1000);
+        });
       }
 
       // TODO: Implementar login real con Firebase
-      // const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      // const userProfile = await getUserProfile(userCredential.user.uid);
-      // setUser(userProfile);
-      
       return { success: true };
     } catch (error: any) {
       const errorMessage = 'Error en el login';
       setError(errorMessage);
-      return { success: false, error: errorMessage };
-    } finally {
       setLoading(false);
+      return { success: false, error: errorMessage };
     }
   };
 
@@ -132,12 +165,14 @@ export const useFirebase = () => {
   const logout = async () => {
     try {
       if (!isConfigured) {
+        // Limpiar AsyncStorage
+        await AsyncStorage.removeItem('demo_user');
+        await AsyncStorage.removeItem('demo_projects');
         setUser(null);
         return;
       }
 
       // TODO: Implementar logout real
-      // await signOut(auth);
       setUser(null);
     } catch (error) {
       console.error('Error logging out:', error);
@@ -150,15 +185,20 @@ export const useFirebase = () => {
 
     try {
       if (!isConfigured) {
-        // Devolver proyectos demo
-        return MOCK_PROJECTS;
+        // Obtener proyectos del AsyncStorage si existen
+        const storedProjects = await AsyncStorage.getItem('demo_projects');
+        if (storedProjects) {
+          return JSON.parse(storedProjects);
+        }
+        
+        // Si no hay proyectos guardados, devolver los mock
+        return MOCK_PROJECTS.map(p => ({
+          ...p,
+          userId: user.uid
+        }));
       }
 
       // TODO: Implementar obtención real de proyectos
-      // const projectsRef = collection(db, 'users', user.uid, 'portfolios');
-      // const querySnapshot = await getDocs(projectsRef);
-      // return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Project));
-      
       return [];
     } catch (error) {
       console.error('Error getting user projects:', error);
@@ -173,21 +213,28 @@ export const useFirebase = () => {
     try {
       if (!isConfigured) {
         // Simular guardado
-        const newProject = {
+        const newProject: Project = {
           id: `demo-${Date.now()}`,
           ...project,
           userId: user.uid,
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString()
         };
+
+        // Obtener proyectos actuales
+        const storedProjects = await AsyncStorage.getItem('demo_projects');
+        const projects = storedProjects ? JSON.parse(storedProjects) : [];
+        
+        // Agregar nuevo proyecto
+        projects.push(newProject);
+        
+        // Guardar en AsyncStorage
+        await AsyncStorage.setItem('demo_projects', JSON.stringify(projects));
+        
         return newProject;
       }
 
       // TODO: Implementar guardado real
-      // const projectData = { ...project, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(), userId: user.uid };
-      // const docRef = await addDoc(collection(db, 'users', user.uid, 'portfolios'), projectData);
-      // return { id: docRef.id, ...projectData };
-      
       throw new Error('Firebase not configured');
     } catch (error) {
       console.error('Error saving project:', error);
@@ -202,13 +249,25 @@ export const useFirebase = () => {
     try {
       if (!isConfigured) {
         // Simular actualización
-        console.log('Demo: actualizando proyecto', projectId, updates);
+        const storedProjects = await AsyncStorage.getItem('demo_projects');
+        if (storedProjects) {
+          const projects = JSON.parse(storedProjects);
+          const index = projects.findIndex((p: Project) => p.id === projectId);
+          
+          if (index !== -1) {
+            projects[index] = {
+              ...projects[index],
+              ...updates,
+              updatedAt: new Date().toISOString()
+            };
+            
+            await AsyncStorage.setItem('demo_projects', JSON.stringify(projects));
+          }
+        }
         return;
       }
 
       // TODO: Implementar actualización real
-      // const projectRef = doc(db, 'users', user.uid, 'portfolios', projectId);
-      // await updateDoc(projectRef, { ...updates, updatedAt: new Date().toISOString() });
     } catch (error) {
       console.error('Error updating project:', error);
       throw error;
@@ -222,13 +281,16 @@ export const useFirebase = () => {
     try {
       if (!isConfigured) {
         // Simular eliminación
-        console.log('Demo: eliminando proyecto', projectId);
+        const storedProjects = await AsyncStorage.getItem('demo_projects');
+        if (storedProjects) {
+          const projects = JSON.parse(storedProjects);
+          const filtered = projects.filter((p: Project) => p.id !== projectId);
+          await AsyncStorage.setItem('demo_projects', JSON.stringify(filtered));
+        }
         return;
       }
 
       // TODO: Implementar eliminación real
-      // const projectRef = doc(db, 'users', user.uid, 'portfolios', projectId);
-      // await deleteDoc(projectRef);
     } catch (error) {
       console.error('Error deleting project:', error);
       throw error;
@@ -241,13 +303,13 @@ export const useFirebase = () => {
 
     try {
       if (!isConfigured) {
-        console.log('Demo: guardando preferencias', preferences);
+        const updatedUser = { ...user, preferences };
+        await AsyncStorage.setItem('demo_user', JSON.stringify(updatedUser));
+        setUser(updatedUser);
         return;
       }
 
       // TODO: Implementar guardado real de preferencias
-      // const userRef = doc(db, 'users', user.uid);
-      // await updateDoc(userRef, { preferences });
     } catch (error) {
       console.error('Error saving preferences:', error);
       throw error;
