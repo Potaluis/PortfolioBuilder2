@@ -61,19 +61,20 @@ export const portfolioStyles = StyleSheet.create({
   },
 
   // Modal de Autenticación
-  modalOverlay: {
+    modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
     justifyContent: 'center',
     alignItems: 'center',
     padding: 16,
-  },
-  modalContainer: {
+    },
+    modalContainer: {
     borderRadius: 16,
-    padding: 24,
-    width: '100%',
-    maxWidth: 400,
-  },
+    padding: 32,  // Aumentar de 24 a 32
+    width: '90%',  // Cambiar de 100% a 90%
+    maxWidth: 500,  // Aumentar de 400 a 500
+    minHeight: 400,  // Añadir altura mínima
+    },
   authSlider: {
     flexDirection: 'row',
     backgroundColor: '#f3f4f6',

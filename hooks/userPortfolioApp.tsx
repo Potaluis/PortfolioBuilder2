@@ -90,10 +90,24 @@ export const usePortfolioApp = () => {
 
   // Funciones de autenticación
   const handleAuth = async () => {
+    // Validaciones comunes
+    if (!authForm.email.trim()) {
+      Alert.alert('Error', 'Por favor ingresa tu email');
+      return;
+    }
+    if (!authForm.password.trim()) {
+      Alert.alert('Error', 'Por favor ingresa tu contraseña');
+      return;
+    }
+
     if (authMode === 'register') {
-      // Validaciones
+      // Validaciones adicionales para registro
       if (!authForm.username.trim()) {
         Alert.alert('Error', 'Por favor ingresa un nombre de usuario');
+        return;
+      }
+      if (authForm.password.length < 6) {
+        Alert.alert('Error', 'La contraseña debe tener al menos 6 caracteres');
         return;
       }
       if (authForm.password !== authForm.confirmPassword) {
@@ -117,7 +131,10 @@ export const usePortfolioApp = () => {
           );
         } else {
           setShowAuthModal(false);
+          Alert.alert('¡Bienvenido!', 'Tu cuenta ha sido creada exitosamente');
         }
+        // Limpiar formulario después del éxito
+        setAuthForm({ username: '', email: '', password: '', confirmPassword: '' });
       }
     } else {
       // Iniciar sesión con Firebase
@@ -125,11 +142,11 @@ export const usePortfolioApp = () => {
       
       if (result.success) {
         setShowAuthModal(false);
+        Alert.alert('¡Bienvenido!', 'Has iniciado sesión correctamente');
+        // Limpiar formulario después del éxito
+        setAuthForm({ username: '', email: '', password: '', confirmPassword: '' });
       }
     }
-
-    // Limpiar formulario
-    setAuthForm({ username: '', email: '', password: '', confirmPassword: '' });
   };
 
   const handleGoogleAuth = async () => {
