@@ -1,4 +1,4 @@
-// app/_layout.tsx - NUEVA navegación sin tabs
+// app/_layout.tsx - NAVEGACIÓN CORREGIDA
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
@@ -20,24 +20,34 @@ export default function RootLayout() {
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
       <Stack screenOptions={{ headerShown: false }}>
-        {/* Pantalla principal del portfolio */}
+        {/* Página principal - Landing o Dashboard según login */}
         <Stack.Screen name="index" />
         
-        {/* Pantalla individual de proyecto */}
+        {/* Página de perfiles públicos */}
         <Stack.Screen 
-          name="project/[id]" 
+          name="profiles" 
           options={{
-            presentation: 'modal',
+            title: 'Perfiles',
             animation: 'slide_from_right'
           }}
         />
         
-        {/* Pantalla de configuración (opcional) */}
+        {/* Dashboard del usuario */}
         <Stack.Screen 
-          name="settings" 
+          name="dashboard" 
           options={{
+            title: 'Dashboard',
+            animation: 'slide_from_right'
+          }}
+        />
+        
+        {/* Editor de proyecto individual */}
+        <Stack.Screen 
+          name="project/[id]" 
+          options={{
+            title: 'Editor',
             presentation: 'modal',
-            animation: 'slide_from_bottom'
+            animation: 'slide_from_right'
           }}
         />
         

@@ -1,4 +1,4 @@
-// components/AuthModal.tsx - MEJORADO con transiciones y tamaño correcto
+// components/AuthModal.tsx - CORREGIDO (sin duplicados)
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { useThemeColor } from '@/hooks/useThemeColor';
@@ -26,7 +26,7 @@ interface AuthModalProps {
   onFormChange: (field: keyof AuthForm, value: string) => void;
 }
 
-const { height: screenHeight, width: screenWidth } = Dimensions.get('window');
+const { height: screenHeight } = Dimensions.get('window');
 
 export const AuthModal: React.FC<AuthModalProps> = ({
   visible,
@@ -41,15 +41,13 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   const textColor = useThemeColor({}, 'text');
   const backgroundColor = useThemeColor({}, 'background');
   
-  // Animaciones mejoradas - empieza 30px arriba
+  // Animaciones
   const translateY = useSharedValue(-30);
   const opacity = useSharedValue(0);
   const scale = useSharedValue(0.98);
 
-  // Efectos de animación
   useEffect(() => {
     if (visible) {
-      // Mostrar modal con slide down suave desde -30px y fade in
       opacity.value = withTiming(1, { duration: 350 });
       translateY.value = withSpring(0, {
         damping: 22,
@@ -60,19 +58,16 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         stiffness: 150,
       });
     } else {
-      // Ocultar modal
       opacity.value = withTiming(0, { duration: 200 });
       translateY.value = withTiming(-30, { duration: 250 });
       scale.value = withTiming(0.98, { duration: 200 });
     }
   }, [visible]);
 
-  // Estilo animado para el fondo blur
   const backgroundStyle = useAnimatedStyle(() => ({
     opacity: opacity.value,
   }));
 
-  // Estilo animado para el modal
   const modalStyle = useAnimatedStyle(() => ({
     transform: [
       { translateY: translateY.value },
@@ -82,7 +77,6 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   }));
 
   const handleClose = () => {
-    // Animar cierre y luego cerrar
     opacity.value = withTiming(0, { duration: 200 });
     translateY.value = withTiming(-30, { duration: 250 });
     scale.value = withTiming(0.98, { duration: 200 }, () => {
@@ -92,7 +86,6 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
   return (
     <Modal visible={visible} transparent animationType="none">
-      {/* Fondo blur animado */}
       <Animated.View style={[{ flex: 1 }, backgroundStyle]}>
         <BlurView
           intensity={25}
@@ -103,14 +96,12 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             alignItems: 'center',
           }}
         >
-          {/* Overlay para cerrar al tocar fuera */}
           <TouchableOpacity
             style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
             onPress={handleClose}
             activeOpacity={1}
           />
 
-          {/* Modal container animado */}
           <KeyboardAvoidingView 
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
             style={{ width: '100%', alignItems: 'center' }}
@@ -119,7 +110,6 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               <ThemedView style={[
                 portfolioStyles.modalContainer, 
                 {
-                  // Modal mucho más grande
                   paddingVertical: 40,
                   paddingHorizontal: 32,
                   minHeight: authMode === 'register' ? 600 : 500,
@@ -136,7 +126,6 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                   contentContainerStyle={{ flexGrow: 1 }}
                   keyboardShouldPersistTaps="handled"
                 >
-                  {/* Título del modal */}
                   <ThemedText style={{
                     fontSize: 32,
                     fontWeight: 'bold',
@@ -146,7 +135,6 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                     {authMode === 'login' ? 'Bienvenido' : 'Crear cuenta'}
                   </ThemedText>
 
-                  {/* Slider para cambiar entre login y registro */}
                   <Animated.View style={[portfolioStyles.authSlider, { marginBottom: 32 }]}>
                     <TouchableOpacity
                       style={[
@@ -178,7 +166,6 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                     </TouchableOpacity>
                   </Animated.View>
 
-                  {/* Campos del formulario */}
                   {authMode === 'register' && (
                     <TextInput
                       style={[portfolioStyles.input, { 
@@ -244,9 +231,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                     />
                   )}
 
-                  {/* Espacio antes de los botones */}
                   <ThemedView style={{ marginTop: authMode === 'login' ? 20 : 8 }}>
-                    {/* Botón de Google */}
                     <TouchableOpacity 
                       style={[portfolioStyles.googleButton, { 
                         paddingVertical: 16,
@@ -259,7 +244,6 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                       </ThemedText>
                     </TouchableOpacity>
 
-                    {/* Botón principal */}
                     <TouchableOpacity 
                       style={[portfolioStyles.primaryButton, { 
                         paddingVertical: 16,
@@ -272,7 +256,6 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                       </ThemedText>
                     </TouchableOpacity>
 
-                    {/* Botón cancelar */}
                     <TouchableOpacity 
                       style={[portfolioStyles.cancelButton, { paddingVertical: 12 }]} 
                       onPress={handleClose}

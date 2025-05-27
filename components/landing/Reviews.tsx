@@ -1,12 +1,11 @@
-// components/landing/Reviews.tsx
-import React, { useEffect, useRef, useState } from 'react';
-import { View, ScrollView, Dimensions } from 'react-native';
+// components/landing/Reviews.tsx - CORREGIDO
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
+import React, { useEffect, useRef, useState } from 'react';
+import { Dimensions, ScrollView, TouchableOpacity, View } from 'react-native';
 
 const { width } = Dimensions.get('window');
 
-// Testimonios ficticios extremadamente positivos
 const testimonials = [
   {
     id: 1,
@@ -68,7 +67,6 @@ export const Reviews: React.FC = () => {
   const scrollViewRef = useRef<ScrollView>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
 
-  // Auto-scroll suave
   useEffect(() => {
     const interval = setInterval(() => {
       if (scrollViewRef.current) {
@@ -88,7 +86,6 @@ export const Reviews: React.FC = () => {
   }, [currentIndex]);
 
   const cardWidth = width > 768 ? 400 : width - 40;
-  const cardsToShow = width > 1200 ? 3 : width > 768 ? 2 : 1;
 
   return (
     <ThemedView style={{
@@ -181,62 +178,7 @@ export const Reviews: React.FC = () => {
                   padding: 24,
                   shadowColor: '#000',
                   shadowOffset: { width: 0, height: 4 },
-                  shadowOpacity: 0.05,
-          shadowRadius: 8,
-          elevation: 4,
-        }}>
-          <ThemedText style={{
-            fontSize: 24,
-            fontWeight: 'bold',
-            color: '#1f2937',
-            textAlign: 'center',
-            marginBottom: 12,
-          }}>
-            ¿Listo para unirte a ellos?
-          </ThemedText>
-          <ThemedText style={{
-            fontSize: 16,
-            color: '#6b7280',
-            textAlign: 'center',
-            marginBottom: 24,
-          }}>
-            Crea tu portfolio profesional hoy mismo
-          </ThemedText>
-          
-          {/* Botones de acción */}
-          <View style={{
-            flexDirection: width > 480 ? 'row' : 'column',
-            gap: 12,
-            alignItems: 'center',
-          }}>
-            <View style={{
-              backgroundColor: '#2563eb',
-              paddingHorizontal: 24,
-              paddingVertical: 12,
-              borderRadius: 8,
-            }}>
-              <ThemedText style={{
-                color: 'white',
-                fontWeight: '600',
-                fontSize: 16,
-              }}>
-                Comenzar Gratis
-              </ThemedText>
-            </View>
-            
-            <ThemedText style={{
-              fontSize: 14,
-              color: '#9ca3af',
-              textAlign: 'center',
-            }}>
-              No se requiere tarjeta de crédito
-            </ThemedText>
-          </View>
-        </View>
-      </View>
-    </ThemedView>
-  );
-};0.08,
+                  shadowOpacity: 0.08,
                   shadowRadius: 12,
                   elevation: 8,
                   borderWidth: 1,
@@ -371,4 +313,58 @@ export const Reviews: React.FC = () => {
           borderRadius: 16,
           shadowColor: '#000',
           shadowOffset: { width: 0, height: 2 },
-          shadowOpacity:
+          shadowOpacity: 0.05,
+          shadowRadius: 8,
+          elevation: 4,
+        }}>
+          <ThemedText style={{
+            fontSize: 24,
+            fontWeight: 'bold',
+            color: '#1f2937',
+            textAlign: 'center',
+            marginBottom: 12,
+          }}>
+            ¿Listo para unirte a ellos?
+          </ThemedText>
+          <ThemedText style={{
+            fontSize: 16,
+            color: '#6b7280',
+            textAlign: 'center',
+            marginBottom: 24,
+          }}>
+            Crea tu portfolio profesional hoy mismo
+          </ThemedText>
+          
+          <View style={{
+            flexDirection: width > 480 ? 'row' : 'column',
+            gap: 12,
+            alignItems: 'center',
+          }}>
+            <TouchableOpacity style={{
+              backgroundColor: '#2563eb',
+              paddingHorizontal: 24,
+              paddingVertical: 12,
+              borderRadius: 8,
+            }}>
+              <ThemedText style={{
+                color: 'white',
+                fontWeight: '600',
+                fontSize: 16,
+              }}>
+                Comenzar Gratis
+              </ThemedText>
+            </TouchableOpacity>
+            
+            <ThemedText style={{
+              fontSize: 14,
+              color: '#9ca3af',
+              textAlign: 'center',
+            }}>
+              No se requiere tarjeta de crédito
+            </ThemedText>
+          </View>
+        </View>
+      </View>
+    </ThemedView>
+  );
+};
