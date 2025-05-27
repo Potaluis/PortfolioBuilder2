@@ -1,9 +1,9 @@
 // app/(tabs)/index.tsx - CORREGIR conflicto de nombres
-import { AuthModal } from '@/components/AuthModal';
+import { AuthModal } from '@/components/auth/AuthModal';
 import { HomeScreen } from '@/components/HomeScreen';
 import { ProjectConfigModal } from '@/components/ProjectConfigModal';
 import { StartScreen } from '@/components/StartScreen';
-import { usePortfolioApp } from '@/hooks/userPortfolioApp';
+import { usePortfolioApp } from '@/hooks/usePortfolioApp';
 import { router } from 'expo-router';
 import React from 'react';
 

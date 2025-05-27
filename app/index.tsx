@@ -1,6 +1,6 @@
 // app/index.tsx - Página principal actualizada
 import { HomeScreen } from '@/components/HomeScreen';
-import { usePortfolioApp } from '@/hooks/userPortfolioApp';
+import { usePortfolioApp } from '@/hooks/usePortfolioApp';
 import { LandingScreen } from '@/screens/LandingScreen';
 import { router } from 'expo-router';
 import React from 'react';

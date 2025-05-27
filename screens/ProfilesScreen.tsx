@@ -3,7 +3,7 @@ import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { Footer } from '@/components/common/Footer';
 import { Header } from '@/components/common/Header';
-import { usePortfolioApp } from '@/hooks/userPortfolioApp';
+import { usePortfolioApp } from '@/hooks/usePortfolioApp';
 import { router } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import React, { useState } from 'react';

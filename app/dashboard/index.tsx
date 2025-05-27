@@ -1,6 +1,6 @@
 // app/dashboard/index.tsx
 import { HomeScreen } from '@/components/HomeScreen';
-import { usePortfolioApp } from '@/hooks/userPortfolioApp';
+import { usePortfolioApp } from '@/hooks/usePortfolioApp';
 import { router } from 'expo-router';
 import React from 'react';
 

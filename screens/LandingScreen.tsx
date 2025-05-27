@@ -8,7 +8,7 @@ import { FeaturedProfiles } from '@/components/landing/FeaturedProfiles';
 import { HeroCarousel } from '@/components/landing/HeroCarousel';
 import { HowItWorks } from '@/components/landing/HowItWorks';
 import { Reviews } from '@/components/landing/Reviews';
-import { usePortfolioApp } from '@/hooks/userPortfolioApp';
+import { usePortfolioApp } from '@/hooks/usePortfolioApp';
 import { StatusBar } from 'expo-status-bar';
 import React, { useRef, useState } from 'react';
 import { Dimensions, ScrollView, View } from 'react-native';

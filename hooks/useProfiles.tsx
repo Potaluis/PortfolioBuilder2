@@ -55,7 +55,7 @@ export const useProfiles = (filters?: ProfileFilters) => {
         
         if (filters.skills.length > 0) {
           filteredProfiles = filteredProfiles.filter(profile =>
-            filters.skills.some(skill => profile.skills.includes(skill))
+            filters.skills.some((skill: any) => profile.skills.includes(skill))
           );
         }
         

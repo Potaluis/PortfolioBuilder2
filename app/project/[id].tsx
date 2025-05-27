@@ -2,7 +2,7 @@
 import { ProjectScreen } from '@/components/ProjectScreen';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
-import { usePortfolioApp } from '@/hooks/userPortfolioApp';
+import { usePortfolioApp } from '@/hooks/usePortfolioApp';
 import { router, useLocalSearchParams } from 'expo-router';
 import React from 'react';
 
