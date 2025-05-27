@@ -20,26 +20,8 @@ export default function RootLayout() {
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
       <Stack screenOptions={{ headerShown: false }}>
-        {/* Página principal - Landing o Dashboard según login */}
-        <Stack.Screen name="index" />
-        
-        {/* Página de perfiles públicos */}
-        <Stack.Screen 
-          name="profiles" 
-          options={{
-            title: 'Perfiles',
-            animation: 'slide_from_right'
-          }}
-        />
-        
-        {/* Dashboard del usuario */}
-        <Stack.Screen 
-          name="dashboard" 
-          options={{
-            title: 'Dashboard',
-            animation: 'slide_from_right'
-          }}
-        />
+        {/* Tabs - Navegación principal */}
+        <Stack.Screen name="(tabs)" />
         
         {/* Editor de proyecto individual */}
         <Stack.Screen 

@@ -1,4 +1,4 @@
-// app/profiles/index.tsx
+// app/(tabs)/profiles.tsx - Página de perfiles públicos
 import { ProfilesScreen } from '@/screens/ProfilesScreen';
 import React from 'react';
 

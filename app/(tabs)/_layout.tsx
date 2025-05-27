@@ -1,4 +1,4 @@
-// app/(tabs)/_layout.tsx - PERSONALIZAR para PortfolioBuilder
+// app/(tabs)/_layout.tsx - Navegación con tabs
 import { Tabs } from 'expo-router';
 import React from 'react';
 import { Platform } from 'react-native';
@@ -21,7 +21,6 @@ export default function TabLayout() {
         tabBarBackground: TabBarBackground,
         tabBarStyle: Platform.select({
           ios: {
-            // Use a transparent background on iOS to show the blur effect
             position: 'absolute',
           },
           default: {},
@@ -30,15 +29,22 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Portfolios', // ← Cambiado de 'Home' a 'Portfolios'
+          title: 'Inicio',
           tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
         }}
       />
       <Tabs.Screen
-        name="explore"
+        name="profiles"
         options={{
-          title: 'Configuración', // ← Cambiado de 'Explore' a 'Configuración'
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
+          title: 'Perfiles',
+          tabBarIcon: ({ color }) => <IconSymbol size={28} name="person.2" color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="dashboard"
+        options={{
+          title: 'Dashboard',
+          tabBarIcon: ({ color }) => <IconSymbol size={28} name="rectangle.grid.2x2" color={color} />,
         }}
       />
     </Tabs>
