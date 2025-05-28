@@ -53,8 +53,8 @@ export const FeaturedProfiles: React.FC = () => {
     console.log(`Opening portfolio: ${profileUrl}`);
   };
 
-  const handleViewMoreProfiles = () => {
-    router.push('/profiles');
+const handleViewMoreProfiles = () => {
+    router.push('//(tabs)/profiles');
   };
 
   return (

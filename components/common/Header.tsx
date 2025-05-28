@@ -26,11 +26,11 @@ export const Header: React.FC<HeaderProps> = ({
   ];
 
   const handleProfilesPress = () => {
-    router.push('/profiles');
+    router.push('//(tabs)/profiles');
   };
 
   const handleDashboardPress = () => {
-    router.push('/dashboard');
+    router.push('//(tabs)/dashboard');
   };
 
   return (

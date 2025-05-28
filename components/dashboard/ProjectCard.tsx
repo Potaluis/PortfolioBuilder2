@@ -23,11 +23,11 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
   const handleLongPress = () => {
     const options = [
       { text: 'Abrir', onPress: onPress },
-      onEdit && { text: 'Editar', onPress: onEdit },
-      onDuplicate && { text: 'Duplicar', onPress: onDuplicate },
-      onDelete && { text: 'Eliminar', onPress: handleDelete, style: 'destructive' as const },
+      ...(onEdit ? [{ text: 'Editar', onPress: onEdit }] : []),
+      ...(onDuplicate ? [{ text: 'Duplicar', onPress: onDuplicate }] : []),
+      ...(onDelete ? [{ text: 'Eliminar', onPress: handleDelete, style: 'destructive' as const }] : []),
       { text: 'Cancelar', style: 'cancel' as const }
-    ].filter(Boolean);
+    ];
 
     Alert.alert(
       project.name,

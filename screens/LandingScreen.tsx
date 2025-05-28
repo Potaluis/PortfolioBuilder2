@@ -1,6 +1,5 @@
 // screens/LandingScreen.tsx
-import { AuthModal } from '@/components/AuthModal';
-import { ThemedView } from '@/components/ThemedView';
+import { AuthModal } from '@/components/auth/AuthModal';
 import { Footer } from '@/components/common/Footer';
 import { Header } from '@/components/common/Header';
 import { ContactForm } from '@/components/landing/ContactForm';
@@ -8,6 +7,7 @@ import { FeaturedProfiles } from '@/components/landing/FeaturedProfiles';
 import { HeroCarousel } from '@/components/landing/HeroCarousel';
 import { HowItWorks } from '@/components/landing/HowItWorks';
 import { Reviews } from '@/components/landing/Reviews';
+import { ThemedView } from '@/components/ThemedView';
 import { usePortfolioApp } from '@/hooks/usePortfolioApp';
 import { StatusBar } from 'expo-status-bar';
 import React, { useRef, useState } from 'react';

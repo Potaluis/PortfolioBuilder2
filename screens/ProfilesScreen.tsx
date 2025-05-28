@@ -113,7 +113,7 @@ export const ProfilesScreen: React.FC = () => {
   const { user, openAuthModal } = usePortfolioApp();
 
   const handleBackToHome = () => {
-    router.push('/');
+    router.push('/(tabs)');
   };
 
   const toggleSkillFilter = (skill: string) => {
