@@ -25,7 +25,7 @@ export const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
     : { justifyContent: 'center', alignItems: 'center', padding: 20 };
 
   return (
-    <View style={containerStyle}>
+    <View>
       <ActivityIndicator size={size} color={spinnerColor} />
       {text && (
         <ThemedText style={{
