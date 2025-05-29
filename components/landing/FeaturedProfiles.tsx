@@ -1,4 +1,4 @@
-// components/landing/FeaturedProfiles.tsx
+// components/landing/FeaturedProfiles.tsx - NAVEGACIÓN CORREGIDA
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { router } from 'expo-router';
@@ -53,8 +53,9 @@ export const FeaturedProfiles: React.FC = () => {
     console.log(`Opening portfolio: ${profileUrl}`);
   };
 
-const handleViewMoreProfiles = () => {
-    router.push('//(tabs)/profiles');
+  // CORREGIDO: Quitar doble slash
+  const handleViewMoreProfiles = () => {
+    router.push('/(tabs)/profiles');
   };
 
   return (

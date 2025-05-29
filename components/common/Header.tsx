@@ -1,4 +1,4 @@
-// components/common/Header.tsx
+// components/common/Header.tsx - NAVEGACIÓN CORREGIDA
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { router } from 'expo-router';
@@ -25,12 +25,17 @@ export const Header: React.FC<HeaderProps> = ({
     { key: 'contact', label: 'Contacto' },
   ];
 
+  // CORREGIDO: Quitar doble slash
   const handleProfilesPress = () => {
-    router.push('//(tabs)/profiles');
+    router.push('/(tabs)/profiles');
   };
 
   const handleDashboardPress = () => {
-    router.push('//(tabs)/dashboard');
+    router.push('/(tabs)/dashboard');
+  };
+
+  const handleHomePress = () => {
+    router.push('/(tabs)');
   };
 
   return (
@@ -60,7 +65,7 @@ export const Header: React.FC<HeaderProps> = ({
         {/* Logo */}
         <TouchableOpacity 
           style={{ flexDirection: 'row', alignItems: 'center' }}
-          onPress={() => onNavigate('hero')}
+          onPress={handleHomePress}
         >
           {/* Placeholder para logo - reemplazar cuando tengas logo.png */}
           <View style={{

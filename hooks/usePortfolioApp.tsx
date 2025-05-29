@@ -1,4 +1,4 @@
-// hooks/userPortfolioApp.tsx - MEJORADO con flujo de autenticación funcional
+// hooks/usePortfolioApp.tsx - AUTENTICACIÓN CORREGIDA
 import {
   AuthForm,
   AuthMode,
@@ -88,9 +88,9 @@ export const usePortfolioApp = () => {
     }
   }, [firebaseError, clearError]);
 
-  // Funciones de autenticación
+  // Funciones de autenticación CORREGIDAS
   const handleAuth = async () => {
-    console.log('handleAuth called with mode:', authMode);
+    console.log('🔐 handleAuth iniciado - modo:', authMode);
     
     // Validaciones básicas
     const emailTrim = authForm.email.trim();
@@ -113,84 +113,78 @@ export const usePortfolioApp = () => {
       return;
     }
 
-    if (authMode === 'register') {
-      // Validaciones adicionales para registro
-      const usernameTrim = authForm.username.trim();
+    try {
+      setLoading(true);
       
-      if (!usernameTrim) {
-        Alert.alert('Error', 'Por favor ingresa un nombre de usuario');
-        return;
-      }
-      
-      if (passwordTrim.length < 6) {
-        Alert.alert('Error', 'La contraseña debe tener al menos 6 caracteres');
-        return;
-      }
-      
-      if (passwordTrim !== authForm.confirmPassword) {
-        Alert.alert('Error', 'Las contraseñas no coinciden');
-        return;
-      }
+      if (authMode === 'register') {
+        // Validaciones adicionales para registro
+        const usernameTrim = authForm.username.trim();
+        
+        if (!usernameTrim) {
+          Alert.alert('Error', 'Por favor ingresa un nombre de usuario');
+          return;
+        }
+        
+        if (passwordTrim.length < 6) {
+          Alert.alert('Error', 'La contraseña debe tener al menos 6 caracteres');
+          return;
+        }
+        
+        if (passwordTrim !== authForm.confirmPassword) {
+          Alert.alert('Error', 'Las contraseñas no coinciden');
+          return;
+        }
 
-      // Registrar con Firebase
-      try {
-        console.log('Calling firebaseRegister...');
+        console.log('📝 Intentando registrar usuario...');
         const result = await firebaseRegister(emailTrim, passwordTrim, usernameTrim);
-        console.log('Register result:', result);
+        console.log('📝 Resultado del registro:', result);
         
         if (result.success) {
           setShowAuthModal(false);
-          Alert.alert('¡Bienvenido!', 'Tu cuenta ha sido creada exitosamente');
-          // Limpiar formulario
           setAuthForm({ username: '', email: '', password: '', confirmPassword: '' });
+          Alert.alert('¡Registro Exitoso!', 'Tu cuenta ha sido creada correctamente');
+        } else {
+          Alert.alert('Error en el Registro', result.error || 'No se pudo crear la cuenta');
         }
-      } catch (error) {
-        console.error('Register error:', error);
-        Alert.alert('Error', 'No se pudo crear la cuenta. Por favor intenta de nuevo.');
-      }
-    } else {
-      // Iniciar sesión con Firebase
-      try {
-        console.log('Calling firebaseLogin...');
+      } else {
+        console.log('🔑 Intentando iniciar sesión...');
         const result = await firebaseLogin(emailTrim, passwordTrim);
-        console.log('Login result:', result);
+        console.log('🔑 Resultado del login:', result);
         
         if (result.success) {
           setShowAuthModal(false);
-          Alert.alert('¡Bienvenido!', 'Has iniciado sesión correctamente');
-          // Limpiar formulario
           setAuthForm({ username: '', email: '', password: '', confirmPassword: '' });
+          Alert.alert('¡Bienvenido!', 'Has iniciado sesión correctamente');
+        } else {
+          Alert.alert('Error en el Login', result.error || 'No se pudo iniciar sesión');
         }
-      } catch (error) {
-        console.error('Login error:', error);
-        Alert.alert('Error', 'No se pudo iniciar sesión. Por favor verifica tus credenciales.');
       }
+    } catch (error) {
+      console.error('❌ Error en autenticación:', error);
+      Alert.alert('Error', 'Ocurrió un error inesperado. Por favor intenta de nuevo.');
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleGoogleAuth = async () => {
-    console.log('Google auth pressed - modo demo');
+    console.log('🚀 Google auth iniciado - modo demo');
     
-    // En modo demo, simular login con Google
     try {
       setLoading(true);
-      
-      // Simular un delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
       
       // Usar el método de login del hook de Firebase con credenciales de Google simuladas
       const result = await firebaseLogin('demo.google@gmail.com', 'google123');
       
       if (result.success) {
         setShowAuthModal(false);
-        Alert.alert('¡Bienvenido!', 'Has iniciado sesión con Google (modo demo)');
-        // Limpiar formulario
         setAuthForm({ username: '', email: '', password: '', confirmPassword: '' });
+        Alert.alert('¡Bienvenido!', 'Has iniciado sesión con Google (modo demo)');
       } else {
         Alert.alert('Error', 'No se pudo iniciar sesión con Google');
       }
     } catch (error) {
-      console.error('Google auth error:', error);
+      console.error('❌ Error en Google auth:', error);
       Alert.alert('Error', 'No se pudo iniciar sesión con Google');
     } finally {
       setLoading(false);
@@ -301,11 +295,16 @@ export const usePortfolioApp = () => {
 
   // Funciones de navegación
   const openAuthModal = (mode: AuthMode) => {
+    console.log('🔓 Abriendo modal de auth en modo:', mode);
     setAuthMode(mode);
     setShowAuthModal(true);
+    // Limpiar formulario al abrir
+    setAuthForm({ username: '', email: '', password: '', confirmPassword: '' });
+    clearError();
   };
 
   const closeAuthModal = () => {
+    console.log('🔒 Cerrando modal de auth');
     setShowAuthModal(false);
     setAuthForm({ username: '', email: '', password: '', confirmPassword: '' });
     clearError();

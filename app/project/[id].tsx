@@ -1,4 +1,4 @@
-// app/project/[id].tsx
+// app/project/[id].tsx - CORREGIDO
 import { ProjectScreen } from '@/components/ProjectScreen';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
@@ -19,8 +19,33 @@ export default function ProjectDetail() {
 
   if (!project) {
     return (
-      <ThemedView style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <ThemedText>Proyecto no encontrado</ThemedText>
+      <ThemedView style={{ 
+        flex: 1, 
+        justifyContent: 'center', 
+        alignItems: 'center',
+        backgroundColor: '#ffffff',
+        padding: 20
+      }}>
+        <ThemedText style={{
+          fontSize: 18,
+          color: '#1f2937',
+          textAlign: 'center',
+          marginBottom: 20
+        }}>
+          Proyecto no encontrado
+        </ThemedText>
+        
+        <ThemedText 
+          style={{
+            fontSize: 16,
+            color: '#2563eb',
+            textAlign: 'center',
+            textDecorationLine: 'underline'
+          }}
+          onPress={handleGoBack}
+        >
+          ← Volver al Dashboard
+        </ThemedText>
       </ThemedView>
     );
   }
