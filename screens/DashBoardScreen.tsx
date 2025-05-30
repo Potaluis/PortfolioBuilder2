@@ -1,5 +1,4 @@
-// screens/DashboardScreen.tsx - CON INDICADOR DE MODO DEBUG
-import { AuthModal } from '@/components/auth/AuthModal';
+// screens/DashBoardScreen.tsx - BYPASS TOTAL PARA DESARROLLO
 import { ContractsSection } from '@/components/dashboard/ContractsSection';
 import { DashboardLayout, DashboardSection } from '@/components/dashboard/DashboardLayout';
 import { EnhancedPortfolioCreator } from '@/components/dashboard/EnhancedPortfolioCreator';
@@ -9,270 +8,220 @@ import { SettingsSection } from '@/components/dashboard/SettingsSection';
 import { StatisticsSection } from '@/components/dashboard/StatisticsSection';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
-import { usePortfolioApp } from '@/hooks/usePortfolioApp';
-import { ProjectConfig } from '@/types';
+import { Project, ProjectConfig, User } from '@/types';
+import { DEV_CONFIG, devLog, getAppStatus } from '@/utils/devConfig';
+import { getTempUserProjects } from '@/utils/tempData';
 import { router } from 'expo-router';
-import React, { useState } from 'react';
-import { TouchableOpacity, View } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { Alert, View } from 'react-native';
+
+// 🚨 USUARIO Y PROYECTOS TEMPORALES PARA DESARROLLO
+const TEMP_USER: User = {
+  uid: 'temp-user-123',
+  username: 'Usuario Temporal',
+  email: 'temp@portfoliobuilder.com',
+  createdAt: new Date().toISOString(),
+  emailVerified: true,
+};
+
+const TEMP_PROJECTS: Project[] = [
+  {
+    id: 'temp-project-1',
+    userId: 'temp-user-123',
+    name: 'Mi Portfolio Demo',
+    config: {
+      sections: [
+        { name: 'Sobre mí', enabled: true, order: 0 },
+        { name: 'Proyectos', enabled: true, order: 1 },
+        { name: 'Contacto', enabled: true, order: 2 }
+      ],
+      menuPosition: 'top',
+      projectStyle: 'grid',
+      projectsPerRowDesktop: 3,
+      projectsPerRowMobile: 2
+    },
+    content: {
+      aboutMe: { 
+        title: 'Sobre mí', 
+        description: 'Desarrollador apasionado por crear experiencias digitales increíbles.',
+        skills: ['React Native', 'TypeScript', 'Firebase']
+      },
+      projects: [],
+      services: [],
+      blog: [],
+      testimonials: [],
+      contact: {}
+    },
+    settings: {
+      published: false,
+      seoTitle: 'Mi Portfolio Demo',
+      seoDescription: 'Portfolio profesional de desarrollo'
+    },
+    createdAt: '2024-05-01T10:00:00Z',
+    updatedAt: new Date().toISOString()
+  },
+  {
+    id: 'temp-project-2',
+    userId: 'temp-user-123',
+    name: 'Portfolio Creativo',
+    config: {
+      sections: [
+        { name: 'Sobre mí', enabled: true, order: 0 },
+        { name: 'Proyectos', enabled: true, order: 1 },
+        { name: 'Servicios', enabled: true, order: 2 },
+        { name: 'Contacto', enabled: true, order: 3 }
+      ],
+      menuPosition: 'left',
+      projectStyle: 'carousel',
+      projectsPerRowDesktop: 2,
+      projectsPerRowMobile: 1
+    },
+    content: {
+      aboutMe: { 
+        title: 'Creativo Digital', 
+        description: 'Diseñador especializado en experiencias visuales impactantes.',
+        skills: ['UI/UX', 'Figma', 'Illustrator']
+      },
+      projects: [],
+      services: [],
+      blog: [],
+      testimonials: [],
+      contact: {}
+    },
+    settings: {
+      published: true,
+      seoTitle: 'Portfolio Creativo',
+      seoDescription: 'Diseño y creatividad digital'
+    },
+    createdAt: '2024-04-15T14:30:00Z',
+    updatedAt: new Date().toISOString()
+  }
+];
 
 export const DashboardScreen: React.FC = () => {
   const [activeSection, setActiveSection] = useState<DashboardSection>('portfolios');
   const [showPortfolioCreator, setShowPortfolioCreator] = useState(false);
+  const [projects, setProjects] = useState<Project[]>(getTempUserProjects());
+  const [currentUser] = useState<User>(TEMP_USER);
+  const appStatus = getAppStatus();
 
-  const {
-    // Estados
-    showAuthModal,
-    authMode,
-    user,
-    projects,
-    authForm,
-    loading,
-    debugMode,
-
-    // Funciones de autenticación
-    handleAuth,
-    handleGoogleAuth,
-    updateAuthForm,
-    setAuthMode,
-    logout,
-
-    // Funciones de proyectos
-    openProject,
-    updateProjectInList,
-    removeProject,
-
-    // Funciones de navegación
-    openAuthModal,
-    closeAuthModal,
-  } = usePortfolioApp();
-
-  // Si no hay usuario, mostrar pantalla de login
-  if (!user) {
-    return (
-      <ThemedView style={{ 
-        flex: 1, 
-        justifyContent: 'center', 
-        alignItems: 'center', 
-        padding: 24,
-        backgroundColor: '#f8fafc',
-      }}>
-        {/* 🚨 INDICADOR DE MODO DEBUG */}
-        {debugMode && (
-          <View style={{
-            position: 'absolute',
-            top: 60,
-            left: 20,
-            right: 20,
-            backgroundColor: '#fef3c7',
-            paddingHorizontal: 16,
-            paddingVertical: 8,
-            borderRadius: 8,
-            borderWidth: 1,
-            borderColor: '#f59e0b',
-            zIndex: 1000,
-          }}>
-            <ThemedText style={{
-              fontSize: 14,
-              fontWeight: '600',
-              color: '#92400e',
-              textAlign: 'center',
-            }}>
-              🛠️ MODO DEPURACIÓN ACTIVO - Login automático habilitado
-            </ThemedText>
-          </View>
-        )}
-
-        <View style={{
-          backgroundColor: 'white',
-          borderRadius: 24,
-          padding: 40,
-          width: '100%',
-          maxWidth: 400,
-          shadowColor: '#000',
-          shadowOffset: { width: 0, height: 8 },
-          shadowOpacity: 0.1,
-          shadowRadius: 24,
-          elevation: 16,
-          marginTop: debugMode ? 60 : 0, // Espacio para el banner de debug
-        }}>
-          <ThemedText style={{ 
-            fontSize: 64, 
-            textAlign: 'center',
-            marginBottom: 24,
-          }}>
-            📊
-          </ThemedText>
-          
-          <ThemedText style={{ 
-            fontSize: 28, 
-            fontWeight: 'bold', 
-            textAlign: 'center',
-            color: '#1f2937',
-            marginBottom: 12,
-          }}>
-            Accede a tu Dashboard
-          </ThemedText>
-          
-          <ThemedText style={{ 
-            fontSize: 16, 
-            textAlign: 'center',
-            color: '#6b7280',
-            lineHeight: 24,
-            marginBottom: 32,
-          }}>
-            {debugMode 
-              ? 'Modo depuración activo - Haz clic para ir directamente al dashboard'
-              : 'Inicia sesión para gestionar tus portfolios, ver estadísticas y administrar tu cuenta profesional'
-            }
-          </ThemedText>
-          
-          {/* 🚨 BOTÓN DE DEBUG - Login directo */}
-          <TouchableOpacity
-            onPress={() => openAuthModal('login')}
-            style={{
-              backgroundColor: debugMode ? '#10b981' : '#2563eb',
-              paddingHorizontal: 32,
-              paddingVertical: 16,
-              borderRadius: 12,
-              shadowColor: debugMode ? '#10b981' : '#2563eb',
-              shadowOffset: { width: 0, height: 4 },
-              shadowOpacity: 0.2,
-              shadowRadius: 8,
-              elevation: 8,
-              flexDirection: 'row',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            {debugMode && (
-              <ThemedText style={{ 
-                fontSize: 18, 
-                marginRight: 8 
-              }}>
-                🚀
-              </ThemedText>
-            )}
-            <ThemedText style={{ 
-              color: 'white', 
-              fontSize: 16, 
-              fontWeight: '600',
-              textAlign: 'center',
-            }}>
-              {debugMode ? 'Acceso Rápido (Debug)' : 'Iniciar Sesión'}
-            </ThemedText>
-          </TouchableOpacity>
-          
-          {!debugMode && (
-            <TouchableOpacity
-              onPress={() => openAuthModal('register')}
-              style={{
-                marginTop: 16,
-                paddingVertical: 12,
-              }}
-            >
-              <ThemedText style={{
-                color: '#2563eb',
-                fontSize: 16,
-                fontWeight: '500',
-                textAlign: 'center',
-                textDecorationLine: 'underline',
-              }}>
-                ¿No tienes cuenta? Regístrate aquí
-              </ThemedText>
-            </TouchableOpacity>
-          )}
-
-          {/* Nota de debug */}
-          {debugMode && (
-            <View style={{
-              marginTop: 20,
-              padding: 12,
-              backgroundColor: '#f0f9ff',
-              borderRadius: 8,
-              borderWidth: 1,
-              borderColor: '#0ea5e9',
-            }}>
-              <ThemedText style={{
-                fontSize: 12,
-                color: '#0369a1',
-                textAlign: 'center',
-                lineHeight: 16,
-              }}>
-                💡 Para desactivar el modo debug, cambia DEBUG_MODE a false en hooks/usePortfolioApp.tsx
-              </ThemedText>
-            </View>
-          )}
-        </View>
-
-        {/* Modal de autenticación (solo se muestra si DEBUG_MODE es false) */}
-        {!debugMode && (
-          <AuthModal
-            visible={showAuthModal}
-            authMode={authMode}
-            authForm={authForm}
-            onClose={closeAuthModal}
-            onAuth={handleAuth}
-            onGoogleAuth={handleGoogleAuth}
-            onModeChange={setAuthMode}
-            onFormChange={updateAuthForm}
-          />
-        )}
-      </ThemedView>
-    );
-  }
+  useEffect(() => {
+    devLog('Dashboard cargado en modo desarrollo');
+    devLog('Usuario temporal:', currentUser.email);
+    devLog('Proyectos cargados:', projects.length);
+  }, [currentUser.email, projects.length]);
 
   // Funciones del portfolio
   const handleCreatePortfolio = (config: ProjectConfig) => {
-    console.log('🎨 Creando portfolio con configuración:', config);
+    devLog('Creando portfolio con configuración:', config);
     
-    const newProject = {
-      userId: user.uid,
+    const newProject: Project = {
+      id: `temp-project-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      userId: currentUser.uid,
       name: `Mi Portfolio ${projects.length + 1}`,
       config: config,
       content: {
         aboutMe: { 
           title: 'Sobre mí', 
-          description: 'Cuéntanos sobre ti...',
+          description: 'Cuéntanos sobre ti y tu experiencia profesional...',
           skills: []
         },
         projects: [],
         services: [],
         blog: [],
         testimonials: [],
-        contact: {}
+        contact: {
+          email: currentUser.email
+        }
       },
       settings: {
         published: false,
-        seoTitle: `Portfolio de ${user.username}`,
-        seoDescription: 'Portfolio profesional'
-      }
+        seoTitle: `Portfolio de ${currentUser.username}`,
+        seoDescription: 'Portfolio profesional creado con PortfolioBuilder'
+      },
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      template: 'custom'
     };
 
-    console.log('💾 Guardando nuevo proyecto:', newProject);
+    setProjects(prev => [newProject, ...prev]);
     setShowPortfolioCreator(false);
+    
+    Alert.alert('¡Éxito!', 'Portfolio creado correctamente (modo desarrollo)');
+    devLog('Proyecto creado:', newProject.name);
   };
 
-  const handleEditProject = (project: any) => {
-    console.log('✏️ Editando proyecto:', project.name);
+  const handleEditProject = (project: Project) => {
+    devLog('Editando proyecto:', project.name);
+    Alert.alert('Función de edición', 'Esta funcionalidad estará disponible pronto');
   };
 
-  const handleDeleteProject = (project: any) => {
-    console.log('🗑️ Eliminando proyecto:', project.name);
-    removeProject(project.id);
+  const handleDeleteProject = (project: Project) => {
+    devLog('Eliminando proyecto:', project.name);
+    
+    Alert.alert(
+      'Eliminar Portfolio',
+      `¿Estás seguro de que deseas eliminar "${project.name}"?`,
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        { 
+          text: 'Eliminar', 
+          style: 'destructive',
+          onPress: () => {
+            setProjects(prev => prev.filter(p => p.id !== project.id));
+            Alert.alert('Portfolio eliminado', 'El portfolio ha sido eliminado correctamente');
+            devLog('Proyecto eliminado:', project.name);
+          }
+        },
+      ]
+    );
   };
 
-  const handleOpenProject = (project: any) => {
-    console.log('📖 Abriendo proyecto:', project.name);
-    openProject(project);
+  const handleOpenProject = (project: Project) => {
+    devLog('Abriendo proyecto:', project.name);
     router.push(`/project/${project.id}`);
   };
 
-  const handleDuplicateProject = (project: any) => {
-    console.log('📋 Duplicando proyecto:', project.name);
+  const handleDuplicateProject = (project: Project) => {
+    devLog('Duplicando proyecto:', project.name);
+    
+    const duplicatedProject: Project = {
+      ...project,
+      id: `temp-project-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      name: `${project.name} (Copia)`,
+      settings: {
+        ...project.settings,
+        published: false,
+      },
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+
+    setProjects(prev => [duplicatedProject, ...prev]);
+    Alert.alert('¡Éxito!', 'Portfolio duplicado correctamente');
+    devLog('Proyecto duplicado:', duplicatedProject.name);
   };
 
-  const handleUpdateUser = (updates: any) => {
-    console.log('👤 Actualizando usuario:', updates);
+  const handleUpdateUser = (updates: Partial<User>) => {
+    devLog('Actualizando usuario:', updates);
+    Alert.alert('Configuración guardada', 'Los cambios han sido guardados (modo desarrollo)');
+  };
+
+  const handleLogout = () => {
+    Alert.alert(
+      'Cerrar Sesión',
+      '¿Estás seguro de que deseas cerrar sesión?',
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        { 
+          text: 'Cerrar Sesión',
+          onPress: () => {
+            Alert.alert('Sesión cerrada', 'Has cerrado sesión correctamente (modo desarrollo)');
+            // En modo desarrollo, no hacemos nada más
+          }
+        }
+      ]
+    );
   };
 
   // Renderizar sección activa
@@ -302,8 +251,8 @@ export const DashboardScreen: React.FC = () => {
       case 'settings':
         return (
           <SettingsSection
-            user={user}
-            onLogout={logout}
+            user={currentUser}
+            onLogout={handleLogout}
             onUpdateUser={handleUpdateUser}
           />
         );
@@ -345,14 +294,14 @@ export const DashboardScreen: React.FC = () => {
 
   return (
     <>
-      {/* 🚨 BANNER DE MODO DEBUG EN DASHBOARD */}
-      {debugMode && (
+      {/* Banner de modo desarrollo */}
+      {DEV_CONFIG.SHOW_DEV_BANNER && (
         <View style={{
           position: 'absolute',
           top: 0,
           left: 0,
           right: 0,
-          backgroundColor: '#10b981',
+          backgroundColor: appStatus.color,
           paddingHorizontal: 20,
           paddingVertical: 12,
           paddingTop: 50, // Para el status bar
@@ -361,33 +310,33 @@ export const DashboardScreen: React.FC = () => {
           alignItems: 'center',
           justifyContent: 'center',
         }}>
-          <ThemedText style={{ fontSize: 16, marginRight: 8 }}>🛠️</ThemedText>
+          <ThemedText style={{ fontSize: 16, marginRight: 8 }}>{appStatus.icon}</ThemedText>
           <ThemedText style={{
             color: 'white',
             fontSize: 14,
             fontWeight: '600',
             textAlign: 'center',
           }}>
-            MODO DEPURACIÓN ACTIVO - Usuario: {user.email}
+            {appStatus.message} - Usuario: {currentUser.username}
           </ThemedText>
         </View>
       )}
 
       <View style={{ 
         flex: 1, 
-        marginTop: debugMode ? 80 : 0 // Espacio para el banner de debug
+        marginTop: DEV_CONFIG.SHOW_DEV_BANNER ? 80 : 0 // Espacio para el banner
       }}>
         <DashboardLayout
-          user={user}
+          user={currentUser}
           activeSection={activeSection}
           onSectionChange={setActiveSection}
-          onLogout={logout}
+          onLogout={handleLogout}
         >
           {renderActiveSection()}
         </DashboardLayout>
       </View>
 
-      {/* Modal Creador de Portfolio Mejorado */}
+      {/* Modal Creador de Portfolio */}
       <EnhancedPortfolioCreator
         visible={showPortfolioCreator}
         onClose={() => setShowPortfolioCreator(false)}
