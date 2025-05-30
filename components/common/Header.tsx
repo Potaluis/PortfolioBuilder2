@@ -1,4 +1,4 @@
-// components/common/Header.tsx - NAVEGACIÓN CORREGIDA
+// components/common/Header.tsx - CON LOGS DE DEBUG
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { router } from 'expo-router';
@@ -25,17 +25,24 @@ export const Header: React.FC<HeaderProps> = ({
     { key: 'contact', label: 'Contacto' },
   ];
 
-  // CORREGIDO: Quitar doble slash
   const handleProfilesPress = () => {
+    console.log('📱 Navegando a perfiles...');
     router.push('/(tabs)/profiles');
   };
 
   const handleDashboardPress = () => {
+    console.log('📊 Navegando a dashboard...');
     router.push('/(tabs)/dashboard');
   };
 
   const handleHomePress = () => {
+    console.log('🏠 Navegando a inicio...');
     router.push('/(tabs)');
+  };
+
+  const handleAuthClick = () => {
+    console.log('🔐 Click en botón de autenticación');
+    onAuthPress();
   };
 
   return (
@@ -155,15 +162,18 @@ export const Header: React.FC<HeaderProps> = ({
             </TouchableOpacity>
           ) : (
             <>
-              <TouchableOpacity
-                onPress={onAuthPress}
-                style={{
-                  backgroundColor: 'transparent',
-                  paddingHorizontal: 16,
-                  paddingVertical: 8,
-                  borderRadius: 8,
-                }}
-              >
+            <TouchableOpacity
+              onPress={() => {
+                console.log('🔐 Click en botón de autenticación');
+                onAuthPress();
+              }}
+              style={{
+                backgroundColor: 'transparent',
+                paddingHorizontal: 16,
+                paddingVertical: 8,
+                borderRadius: 8,
+              }}
+            >
                 <ThemedText style={{ 
                   color: '#4b5563', 
                   fontWeight: '500',
@@ -174,7 +184,7 @@ export const Header: React.FC<HeaderProps> = ({
               </TouchableOpacity>
               
               <TouchableOpacity
-                onPress={() => onAuthPress()}
+                onPress={handleAuthClick}
                 style={{
                   backgroundColor: '#2563eb',
                   paddingHorizontal: 20,

@@ -1,12 +1,21 @@
-// components/AuthModal.tsx - CORREGIDO (sin duplicados)
+// components/auth/AuthModal.tsx - MEJORADO CON LOGS
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { useThemeColor } from '@/hooks/useThemeColor';
 import { portfolioStyles } from '@/styles/styles';
 import { AuthForm, AuthMode } from '@/types';
 import { BlurView } from 'expo-blur';
-import React, { useEffect } from 'react';
-import { Dimensions, KeyboardAvoidingView, Modal, Platform, ScrollView, TextInput, TouchableOpacity } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import {
+  ActivityIndicator,
+  Dimensions,
+  KeyboardAvoidingView,
+  Modal,
+  Platform,
+  ScrollView,
+  TextInput,
+  TouchableOpacity
+} from 'react-native';
 import Animated, {
   runOnJS,
   useAnimatedStyle,
@@ -40,6 +49,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 }) => {
   const textColor = useThemeColor({}, 'text');
   const backgroundColor = useThemeColor({}, 'background');
+  const [isProcessing, setIsProcessing] = useState(false);
   
   // Animaciones
   const translateY = useSharedValue(-30);
@@ -47,6 +57,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   const scale = useSharedValue(0.98);
 
   useEffect(() => {
+    console.log('🔐 AuthModal visible cambió a:', visible);
+    
     if (visible) {
       opacity.value = withTiming(1, { duration: 350 });
       translateY.value = withSpring(0, {
@@ -77,6 +89,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   }));
 
   const handleClose = () => {
+    console.log('🔒 Cerrando modal de autenticación');
     opacity.value = withTiming(0, { duration: 200 });
     translateY.value = withTiming(-30, { duration: 250 });
     scale.value = withTiming(0.98, { duration: 200 }, () => {
@@ -84,8 +97,40 @@ export const AuthModal: React.FC<AuthModalProps> = ({
     });
   };
 
+  const handleAuthSubmit = async () => {
+    console.log('🚀 Intentando autenticación - modo:', authMode);
+    setIsProcessing(true);
+    
+    try {
+      await onAuth();
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const handleGoogleSubmit = async () => {
+    console.log('🚀 Intentando autenticación con Google');
+    setIsProcessing(true);
+    
+    try {
+      await onGoogleAuth();
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  // Si el modal no es visible, no renderizar nada
+  if (!visible) {
+    return null;
+  }
+
   return (
-    <Modal visible={visible} transparent animationType="none">
+    <Modal 
+      visible={visible} 
+      transparent 
+      animationType="none"
+      onRequestClose={handleClose}
+    >
       <Animated.View style={[{ flex: 1 }, backgroundStyle]}>
         <BlurView
           intensity={25}
@@ -142,6 +187,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                         authMode === 'login' && portfolioStyles.sliderButtonActive
                       ]}
                       onPress={() => onModeChange('login')}
+                      disabled={isProcessing}
                     >
                       <ThemedText style={[
                         portfolioStyles.sliderText,
@@ -156,6 +202,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                         authMode === 'register' && portfolioStyles.sliderButtonActive
                       ]}
                       onPress={() => onModeChange('register')}
+                      disabled={isProcessing}
                     >
                       <ThemedText style={[
                         portfolioStyles.sliderText,
@@ -180,6 +227,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                       value={authForm.username}
                       onChangeText={(text) => onFormChange('username', text)}
                       autoCapitalize="none"
+                      editable={!isProcessing}
                     />
                   )}
                   
@@ -197,6 +245,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                     onChangeText={(text) => onFormChange('email', text)}
                     keyboardType="email-address"
                     autoCapitalize="none"
+                    editable={!isProcessing}
                   />
                   
                   <TextInput
@@ -212,6 +261,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                     value={authForm.password}
                     onChangeText={(text) => onFormChange('password', text)}
                     secureTextEntry
+                    editable={!isProcessing}
                   />
                   
                   {authMode === 'register' && (
@@ -228,6 +278,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                       value={authForm.confirmPassword}
                       onChangeText={(text) => onFormChange('confirmPassword', text)}
                       secureTextEntry
+                      editable={!isProcessing}
                     />
                   )}
 
@@ -235,30 +286,43 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                     <TouchableOpacity 
                       style={[portfolioStyles.googleButton, { 
                         paddingVertical: 16,
-                        marginBottom: 16 
+                        marginBottom: 16,
+                        opacity: isProcessing ? 0.6 : 1
                       }]} 
-                      onPress={onGoogleAuth}
+                      onPress={handleGoogleSubmit}
+                      disabled={isProcessing}
                     >
-                      <ThemedText style={[portfolioStyles.googleButtonText, { fontSize: 16 }]}>
-                        Continuar con Google
-                      </ThemedText>
+                      {isProcessing ? (
+                        <ActivityIndicator color="white" size="small" />
+                      ) : (
+                        <ThemedText style={[portfolioStyles.googleButtonText, { fontSize: 16 }]}>
+                          Continuar con Google
+                        </ThemedText>
+                      )}
                     </TouchableOpacity>
 
                     <TouchableOpacity 
                       style={[portfolioStyles.primaryButton, { 
                         paddingVertical: 16,
-                        marginBottom: 16 
+                        marginBottom: 16,
+                        opacity: isProcessing ? 0.6 : 1
                       }]} 
-                      onPress={onAuth}
+                      onPress={handleAuthSubmit}
+                      disabled={isProcessing}
                     >
-                      <ThemedText style={[portfolioStyles.primaryButtonText, { fontSize: 16 }]}>
-                        {authMode === 'login' ? 'Iniciar Sesión' : 'Registrarse'}
-                      </ThemedText>
+                      {isProcessing ? (
+                        <ActivityIndicator color="white" size="small" />
+                      ) : (
+                        <ThemedText style={[portfolioStyles.primaryButtonText, { fontSize: 16 }]}>
+                          {authMode === 'login' ? 'Iniciar Sesión' : 'Registrarse'}
+                        </ThemedText>
+                      )}
                     </TouchableOpacity>
 
                     <TouchableOpacity 
                       style={[portfolioStyles.cancelButton, { paddingVertical: 12 }]} 
                       onPress={handleClose}
+                      disabled={isProcessing}
                     >
                       <ThemedText style={[portfolioStyles.cancelButtonText, { fontSize: 15 }]}>
                         Cancelar

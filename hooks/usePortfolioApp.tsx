@@ -294,14 +294,14 @@ export const usePortfolioApp = () => {
   };
 
   // Funciones de navegación
-  const openAuthModal = (mode: AuthMode) => {
-    console.log('🔓 Abriendo modal de auth en modo:', mode);
-    setAuthMode(mode);
-    setShowAuthModal(true);
-    // Limpiar formulario al abrir
-    setAuthForm({ username: '', email: '', password: '', confirmPassword: '' });
-    clearError();
-  };
+const openAuthModal = (mode: AuthMode) => {
+  console.log('🔓 Abriendo modal de auth en modo:', mode);
+  setAuthMode(mode);
+  setShowAuthModal(true);
+  // Limpiar formulario al abrir
+  setAuthForm({ username: '', email: '', password: '', confirmPassword: '' });
+  clearError();
+};
 
   const closeAuthModal = () => {
     console.log('🔒 Cerrando modal de auth');
