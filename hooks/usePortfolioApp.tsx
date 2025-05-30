@@ -1,4 +1,4 @@
-// hooks/usePortfolioApp.tsx - AUTENTICACIÓN CORREGIDA
+// hooks/usePortfolioApp.tsx - CON BYPASS TEMPORAL PARA DEPURACIÓN
 import {
   AuthForm,
   AuthMode,
@@ -8,6 +8,9 @@ import {
 import { useEffect, useState } from 'react';
 import { Alert } from 'react-native';
 import { useFirebase } from './useFirebase';
+
+// 🚨 MODO DEPURACIÓN - Cambiar a false para usar autenticación real
+const DEBUG_MODE = true;
 
 export const usePortfolioApp = () => {
   // Firebase hook
@@ -88,11 +91,40 @@ export const usePortfolioApp = () => {
     }
   }, [firebaseError, clearError]);
 
-  // Funciones de autenticación CORREGIDAS
+  // 🚨 FUNCIÓN DE BYPASS PARA DEPURACIÓN
+  const handleDebugLogin = async () => {
+    console.log('🚀 MODO DEPURACIÓN - Login automático activado');
+    
+    try {
+      setLoading(true);
+      
+      // Simular login exitoso directamente
+      const result = await firebaseLogin('debug@portfoliobuilder.com', 'debug123');
+      
+      if (result.success) {
+        setShowAuthModal(false);
+        setAuthForm({ username: '', email: '', password: '', confirmPassword: '' });
+        console.log('✅ Login de depuración completado');
+      }
+    } catch (error) {
+      console.error('❌ Error en login de depuración:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Funciones de autenticación MODIFICADAS CON BYPASS
   const handleAuth = async () => {
+    // 🚨 BYPASS TEMPORAL PARA DEPURACIÓN
+    if (DEBUG_MODE) {
+      console.log('🛠️ MODO DEPURACIÓN ACTIVO - Saltando autenticación real');
+      await handleDebugLogin();
+      return;
+    }
+
+    // Código original de autenticación...
     console.log('🔐 handleAuth iniciado - modo:', authMode);
     
-    // Validaciones básicas
     const emailTrim = authForm.email.trim();
     const passwordTrim = authForm.password.trim();
     
@@ -101,7 +133,6 @@ export const usePortfolioApp = () => {
       return;
     }
     
-    // Validación simple de email
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(emailTrim)) {
       Alert.alert('Error', 'Por favor ingresa un email válido');
@@ -117,7 +148,6 @@ export const usePortfolioApp = () => {
       setLoading(true);
       
       if (authMode === 'register') {
-        // Validaciones adicionales para registro
         const usernameTrim = authForm.username.trim();
         
         if (!usernameTrim) {
@@ -135,9 +165,7 @@ export const usePortfolioApp = () => {
           return;
         }
 
-        console.log('📝 Intentando registrar usuario...');
         const result = await firebaseRegister(emailTrim, passwordTrim, usernameTrim);
-        console.log('📝 Resultado del registro:', result);
         
         if (result.success) {
           setShowAuthModal(false);
@@ -147,9 +175,7 @@ export const usePortfolioApp = () => {
           Alert.alert('Error en el Registro', result.error || 'No se pudo crear la cuenta');
         }
       } else {
-        console.log('🔑 Intentando iniciar sesión...');
         const result = await firebaseLogin(emailTrim, passwordTrim);
-        console.log('🔑 Resultado del login:', result);
         
         if (result.success) {
           setShowAuthModal(false);
@@ -168,12 +194,18 @@ export const usePortfolioApp = () => {
   };
 
   const handleGoogleAuth = async () => {
+    // 🚨 BYPASS TEMPORAL PARA DEPURACIÓN
+    if (DEBUG_MODE) {
+      console.log('🛠️ MODO DEPURACIÓN - Google Auth bypass');
+      await handleDebugLogin();
+      return;
+    }
+
+    // Código original de Google Auth...
     console.log('🚀 Google auth iniciado - modo demo');
     
     try {
       setLoading(true);
-      
-      // Usar el método de login del hook de Firebase con credenciales de Google simuladas
       const result = await firebaseLogin('demo.google@gmail.com', 'google123');
       
       if (result.success) {
@@ -196,10 +228,10 @@ export const usePortfolioApp = () => {
   };
 
   // Funciones de proyectos
-  const createNewProject = async () => {
+  const createNewProject = async (customConfig?: ProjectConfig) => {
     if (!firebaseUser) {
       Alert.alert('Error', 'Debes iniciar sesión para crear un proyecto');
-      return;
+      return null;
     }
 
     setLoading(true);
@@ -207,7 +239,7 @@ export const usePortfolioApp = () => {
       const newProjectData = {
         userId: firebaseUser.uid,
         name: `Portfolio ${projects.length + 1}`,
-        config: { ...projectConfig },
+        config: customConfig || { ...projectConfig },
         content: {
           aboutMe: {
             title: '',
@@ -236,9 +268,11 @@ export const usePortfolioApp = () => {
       setShowProjectConfigModal(false);
       
       Alert.alert('¡Éxito!', 'Portfolio creado correctamente');
+      return savedProject;
     } catch (error) {
       Alert.alert('Error', 'No se pudo crear el portfolio');
       console.error('Error creating project:', error);
+      return null;
     } finally {
       setLoading(false);
     }
@@ -294,14 +328,21 @@ export const usePortfolioApp = () => {
   };
 
   // Funciones de navegación
-const openAuthModal = (mode: AuthMode) => {
-  console.log('🔓 Abriendo modal de auth en modo:', mode);
-  setAuthMode(mode);
-  setShowAuthModal(true);
-  // Limpiar formulario al abrir
-  setAuthForm({ username: '', email: '', password: '', confirmPassword: '' });
-  clearError();
-};
+  const openAuthModal = (mode: AuthMode) => {
+    console.log('🔓 Abriendo modal de auth en modo:', mode);
+    
+    // 🚨 BYPASS PARA DEPURACIÓN - Auto login sin modal
+    if (DEBUG_MODE) {
+      console.log('🛠️ MODO DEPURACIÓN - Login automático sin modal');
+      handleDebugLogin();
+      return;
+    }
+
+    setAuthMode(mode);
+    setShowAuthModal(true);
+    setAuthForm({ username: '', email: '', password: '', confirmPassword: '' });
+    clearError();
+  };
 
   const closeAuthModal = () => {
     console.log('🔒 Cerrando modal de auth');
@@ -333,6 +374,41 @@ const openAuthModal = (mode: AuthMode) => {
     }
   };
 
+  // Función para duplicar proyecto
+  const duplicateProject = async (project: Project) => {
+    if (!firebaseUser) {
+      Alert.alert('Error', 'Debes iniciar sesión para duplicar un proyecto');
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const duplicatedProjectData = {
+        ...project,
+        userId: firebaseUser.uid,
+        name: `${project.name} (Copia)`,
+        settings: {
+          ...project.settings,
+          published: false,
+        }
+      };
+
+      delete (duplicatedProjectData as any).id;
+      delete (duplicatedProjectData as any).createdAt;
+      delete (duplicatedProjectData as any).updatedAt;
+
+      const savedProject = await saveProject(duplicatedProjectData);
+      setProjects(prev => [savedProject, ...prev]);
+      
+      Alert.alert('¡Éxito!', 'Portfolio duplicado correctamente');
+    } catch (error) {
+      Alert.alert('Error', 'No se pudo duplicar el portfolio');
+      console.error('Error duplicating project:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return {
     // Estados
     showAuthModal,
@@ -346,6 +422,9 @@ const openAuthModal = (mode: AuthMode) => {
     loading: loading || firebaseLoading,
     error: firebaseError,
 
+    // 🚨 ESTADO DE DEPURACIÓN
+    debugMode: DEBUG_MODE,
+
     // Funciones de autenticación
     handleAuth,
     handleGoogleAuth,
@@ -357,6 +436,7 @@ const openAuthModal = (mode: AuthMode) => {
     openProject,
     updateProjectInList,
     removeProject,
+    duplicateProject,
 
     // Funciones de configuración
     toggleSection,

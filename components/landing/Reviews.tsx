@@ -1,7 +1,7 @@
-// components/landing/Reviews.tsx - CORREGIDO
+// components/landing/Reviews.tsx - ARREGLADO: Re-renders infinitos
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Dimensions, ScrollView, TouchableOpacity, View } from 'react-native';
 
 const { width } = Dimensions.get('window');
@@ -66,26 +66,41 @@ const testimonials = [
 export const Reviews: React.FC = () => {
   const scrollViewRef = useRef<ScrollView>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      if (scrollViewRef.current) {
-        const nextIndex = (currentIndex + 1) % testimonials.length;
-        const cardWidth = width > 768 ? 400 : width - 40;
-        const gap = 20;
-        
-        scrollViewRef.current.scrollTo({
-          x: nextIndex * (cardWidth + gap),
-          animated: true,
-        });
-        setCurrentIndex(nextIndex);
-      }
-    }, 4000);
-
-    return () => clearInterval(interval);
-  }, [currentIndex]);
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
   const cardWidth = width > 768 ? 400 : width - 40;
+
+  // CORREGIDO: Usar useCallback para evitar recreación en cada render
+  const scrollToNext = useCallback(() => {
+    if (scrollViewRef.current) {
+      const nextIndex = (currentIndex + 1) % testimonials.length;
+      const cardSpacing = 20;
+      
+      scrollViewRef.current.scrollTo({
+        x: nextIndex * (cardWidth + cardSpacing),
+        animated: true,
+      });
+      setCurrentIndex(nextIndex);
+    }
+  }, [currentIndex, cardWidth]);
+
+  // CORREGIDO: Efecto separado para el auto-scroll
+  useEffect(() => {
+    // Limpiar interval anterior si existe
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+    }
+
+    // Crear nuevo interval
+    intervalRef.current = setInterval(scrollToNext, 4000);
+
+    // Cleanup
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+    };
+  }, [scrollToNext]); // CORREGIDO: Solo depende de scrollToNext
 
   return (
     <ThemedView style={{
@@ -167,6 +182,14 @@ export const Reviews: React.FC = () => {
             }}
             snapToInterval={cardWidth + 20}
             decelerationRate="fast"
+            // CORREGIDO: Evitar conflicto con auto-scroll
+            onMomentumScrollEnd={(event) => {
+              const x = event.nativeEvent.contentOffset.x;
+              const index = Math.round(x / (cardWidth + 20));
+              if (index !== currentIndex && index >= 0 && index < testimonials.length) {
+                setCurrentIndex(index);
+              }
+            }}
           >
             {testimonials.map((testimonial) => (
               <View

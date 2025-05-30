@@ -1,8 +1,8 @@
-// hooks/useFirebase.tsx - MODO DEMO CORREGIDO
+// hooks/useFirebase.tsx - ARREGLADO: Re-renders infinitos
 import { isFirebaseConfigured } from '@/services/firebase';
 import { AuthResponse, Project, User } from '@/types';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 // Mock user para desarrollo
 const createMockUser = (email: string, username?: string): User => ({
@@ -55,6 +55,40 @@ export const useFirebase = () => {
 
   const isConfigured = isFirebaseConfigured();
 
+  // CORREGIDO: Usar useCallback para evitar re-renders infinitos
+  const getUserProjects = useCallback(async (): Promise<Project[]> => {
+    if (!user?.uid) {
+      console.log('❌ No hay usuario para obtener proyectos');
+      return [];
+    }
+
+    console.log('📁 Obteniendo proyectos para usuario:', user.email);
+
+    try {
+      if (!isConfigured) {
+        // Obtener proyectos del AsyncStorage si existen
+        const storedProjects = await AsyncStorage.getItem('demo_projects');
+        if (storedProjects) {
+          const projects = JSON.parse(storedProjects);
+          console.log('📁 Proyectos encontrados en storage:', projects.length);
+          return projects;
+        }
+        
+        // Si no hay proyectos guardados, crear y devolver los mock
+        const mockProjects = createMockProjects(user.uid);
+        await AsyncStorage.setItem('demo_projects', JSON.stringify(mockProjects));
+        console.log('📁 Proyectos demo creados:', mockProjects.length);
+        return mockProjects;
+      }
+
+      // TODO: Implementar obtención real de proyectos
+      return [];
+    } catch (error) {
+      console.error('❌ Error obteniendo proyectos:', error);
+      return [];
+    }
+  }, [user?.uid, user?.email, isConfigured]);
+
   // Inicializar - verificar usuario guardado
   useEffect(() => {
     const initializeAuth = async () => {
@@ -81,7 +115,7 @@ export const useFirebase = () => {
 
     // Pequeño delay para simular carga inicial
     setTimeout(initializeAuth, 800);
-  }, []);
+  }, [isConfigured]); // CORREGIDO: Solo depende de isConfigured
 
   // Registrar usuario
   const register = async (email: string, password: string, username: string): Promise<AuthResponse> => {
@@ -181,40 +215,6 @@ export const useFirebase = () => {
       setUser(null);
     } catch (error) {
       console.error('❌ Error cerrando sesión:', error);
-    }
-  };
-
-  // Obtener proyectos del usuario
-  const getUserProjects = async (): Promise<Project[]> => {
-    if (!user?.uid) {
-      console.log('❌ No hay usuario para obtener proyectos');
-      return [];
-    }
-
-    console.log('📁 Obteniendo proyectos para usuario:', user.email);
-
-    try {
-      if (!isConfigured) {
-        // Obtener proyectos del AsyncStorage si existen
-        const storedProjects = await AsyncStorage.getItem('demo_projects');
-        if (storedProjects) {
-          const projects = JSON.parse(storedProjects);
-          console.log('📁 Proyectos encontrados en storage:', projects.length);
-          return projects;
-        }
-        
-        // Si no hay proyectos guardados, crear y devolver los mock
-        const mockProjects = createMockProjects(user.uid);
-        await AsyncStorage.setItem('demo_projects', JSON.stringify(mockProjects));
-        console.log('📁 Proyectos demo creados:', mockProjects.length);
-        return mockProjects;
-      }
-
-      // TODO: Implementar obtención real de proyectos
-      return [];
-    } catch (error) {
-      console.error('❌ Error obteniendo proyectos:', error);
-      return [];
     }
   };
 
